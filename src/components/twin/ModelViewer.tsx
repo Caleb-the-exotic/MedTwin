@@ -5,6 +5,7 @@ import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { Box3, Vector3 } from "three";
 import { RotateCcw, RefreshCw, Box, AlertTriangle, Loader2 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { useAppStore } from "@/hooks/useAppStore";
 
 export const DEFAULT_MODEL_URL = "/models/maNO_CPP_approx.obj";
 
@@ -181,6 +182,7 @@ export function ModelViewer({
 
   const [status, setStatus] = useState<"loading" | "ready" | "fallback" | "error">("loading");
   const [autoRotate, setAutoRotate] = useState(true);
+  const { resetPatientVitals } = useAppStore();
 
   useEffect(() => {
     autoRotateRef.current = autoRotate;
@@ -404,11 +406,13 @@ export function ModelViewer({
   const resetView = useCallback(() => {
     const camera = cameraRef.current;
     const controls = controlsRef.current;
-    if (!camera || !controls) return;
-    camera.position.set(4.6, 3.2, 5.6);
-    controls.target.set(0, 0, 0);
-    controls.update();
-  }, []);
+    if (camera && controls) {
+      camera.position.set(4.6, 3.2, 5.6);
+      controls.target.set(0, 0, 0);
+      controls.update();
+    }
+    resetPatientVitals();
+  }, [resetPatientVitals]);
 
   const activeLegend = legend ?? MODEL_ZONES.map((z) => ({ zone: z.id, label: z.label }));
 

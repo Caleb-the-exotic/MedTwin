@@ -1,4 +1,12 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type {
   Device,
   DigitalTwin,
@@ -24,7 +32,12 @@ import {
 import { computeSafety } from "@/services/riskService";
 import { clamp } from "@/utils/format";
 
-export type Toast = { id: string; title: string; description?: string; tone: "signal" | "amber" | "critical" | "safe" };
+export type Toast = {
+  id: string;
+  title: string;
+  description?: string;
+  tone: "signal" | "amber" | "critical" | "safe";
+};
 
 const PRESETS: Record<PatientPreset, Partial<PatientProfile["baseline"]>> = {
   normal: {},
@@ -61,6 +74,7 @@ interface AppActions {
   selectPatient: (id: string) => void;
   applyPreset: (preset: PatientPreset) => void;
   setSliderValue: (key: keyof PatientProfile["baseline"], value: number) => void;
+  resetPatientVitals: () => void;
   toggleFailure: (id: string) => void;
   setFailureIntensity: (id: string, value: number) => void;
   resetFailures: () => void;
@@ -96,7 +110,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const [failures, setFailures] = useState<FailureInjection[]>(initialFailures);
   const [timeline, setTimeline] = useState<TimelineEvent[]>(initialTimeline);
   const [simulationRuns, setSimulationRuns] = useState<SimulationRun[]>(initialSimulationRuns);
-  const [simClock, setSimClock] = useState<{ status: "running" | "paused" | "stopped"; elapsed: number }>({
+  const [simClock, setSimClock] = useState<{
+    status: "running" | "paused" | "stopped";
+    elapsed: number;
+  }>({
     status: "running",
     elapsed: 0,
   });
@@ -104,7 +121,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const tRef = useRef(0);
 
-  const { safetyScore, riskLevel, anomalyScore } = useMemo(() => computeSafety(failures), [failures]);
+  const { safetyScore, riskLevel, anomalyScore } = useMemo(
+    () => computeSafety(failures),
+    [failures],
+  );
 
   const pushToast = useCallback((t: Omit<Toast, "id">) => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -121,9 +141,13 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const saveDevice = useCallback(
     (device: Device) => {
       setDevices((prev) => prev.map((d) => (d.id === device.id ? device : d)));
-      pushToast({ title: "Device saved", description: `${device.name} updated successfully.`, tone: "safe" });
+      pushToast({
+        title: "Device saved",
+        description: `${device.name} updated successfully.`,
+        tone: "safe",
+      });
     },
-    [pushToast]
+    [pushToast],
   );
 
   const selectPatient = useCallback((id: string) => {
@@ -142,13 +166,23 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         tone: p === "normal" ? "safe" : "amber",
       });
     },
-    [pushToast]
+    [pushToast],
   );
 
   const setSliderValue = useCallback((key: keyof PatientProfile["baseline"], value: number) => {
     setPreset("normal");
     setSliderOverrides((prev) => ({ ...prev, [key]: value }));
   }, []);
+
+  const resetPatientVitals = useCallback(() => {
+    setSliderOverrides({});
+    setPreset("normal");
+    pushToast({
+      title: "Patient vitals reset",
+      description: "Simulator controls returned to the patient baseline.",
+      tone: "safe",
+    });
+  }, [pushToast]);
 
   const toggleFailure = useCallback(
     (id: string) => {
@@ -171,55 +205,69 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
             tone: nextActive ? (intensity >= 66 ? "critical" : "amber") : "safe",
           });
           if (nextActive) {
-            setAlerts((prevA) => [
-              {
-                id: `alert-${Date.now()}`,
-                title: `${f.label} injected on ${f.targetComponent}`,
-                message: `Intensity set to ${intensity}%. Monitoring downstream effects on safety score.`,
-                severity: severityForIntensity(intensity),
-                time: new Date().toISOString(),
-                source: f.targetComponent,
-                read: false,
-              },
-              ...prevA,
-            ].slice(0, 30));
+            setAlerts((prevA) =>
+              [
+                {
+                  id: `alert-${Date.now()}`,
+                  title: `${f.label} injected on ${f.targetComponent}`,
+                  message: `Intensity set to ${intensity}%. Monitoring downstream effects on safety score.`,
+                  severity: severityForIntensity(intensity),
+                  time: new Date().toISOString(),
+                  source: f.targetComponent,
+                  read: false,
+                },
+                ...prevA,
+              ].slice(0, 30),
+            );
           }
-          return { ...f, active: nextActive, intensity, activatedAt: nextActive ? new Date().toISOString() : f.activatedAt };
-        })
+          return {
+            ...f,
+            active: nextActive,
+            intensity,
+            activatedAt: nextActive ? new Date().toISOString() : f.activatedAt,
+          };
+        }),
       );
     },
-    [pushToast]
+    [pushToast],
   );
 
-  const setFailureIntensity = useCallback(
-    (id: string, value: number) => {
-      setFailures((prev) =>
-        prev.map((f) => {
-          if (f.id !== id) return f;
-          if (f.active && Math.abs(value - f.intensity) >= 25) {
-            const event: TimelineEvent = {
-              id: `evt-${Date.now()}`,
-              t: tRef.current,
-              label: `${f.label} intensity changed to ${value}% on ${f.targetComponent}`,
-              severity: severityForIntensity(value),
-              source: f.targetComponent,
-            };
-            setTimeline((prevT) => [event, ...prevT].slice(0, 60));
-          }
-          return { ...f, intensity: value };
-        })
-      );
-    },
-    []
-  );
+  const setFailureIntensity = useCallback((id: string, value: number) => {
+    setFailures((prev) =>
+      prev.map((f) => {
+        if (f.id !== id) return f;
+        if (f.active && Math.abs(value - f.intensity) >= 25) {
+          const event: TimelineEvent = {
+            id: `evt-${Date.now()}`,
+            t: tRef.current,
+            label: `${f.label} intensity changed to ${value}% on ${f.targetComponent}`,
+            severity: severityForIntensity(value),
+            source: f.targetComponent,
+          };
+          setTimeline((prevT) => [event, ...prevT].slice(0, 60));
+        }
+        return { ...f, intensity: value };
+      }),
+    );
+  }, []);
 
   const resetFailures = useCallback(() => {
     setFailures(initialFailures);
     setTimeline((prev) => [
-      { id: `evt-${Date.now()}`, t: tRef.current, label: "All failure injections cleared", severity: "ok", source: "System" },
+      {
+        id: `evt-${Date.now()}`,
+        t: tRef.current,
+        label: "All failure injections cleared",
+        severity: "ok",
+        source: "System",
+      },
       ...prev,
     ]);
-    pushToast({ title: "Failures reset", description: "All injected failures have been cleared.", tone: "safe" });
+    pushToast({
+      title: "Failures reset",
+      description: "All injected failures have been cleared.",
+      tone: "safe",
+    });
   }, [pushToast]);
 
   const addScenario = useCallback(
@@ -227,7 +275,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       setScenarios((prev) => [scenario, ...prev]);
       pushToast({ title: "Scenario generated", description: scenario.title, tone: "signal" });
     },
-    [pushToast]
+    [pushToast],
   );
 
   const simStart = useCallback(() => setSimClock((c) => ({ ...c, status: "running" })), []);
@@ -305,6 +353,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     selectPatient,
     applyPreset,
     setSliderValue,
+    resetPatientVitals,
     toggleFailure,
     setFailureIntensity,
     resetFailures,
