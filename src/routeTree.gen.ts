@@ -12,15 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AiSafetyAnalysisRouteImport } from './routes/ai-safety-analysis'
 import { Route as DatasetExplorerRouteImport } from './routes/dataset-explorer'
-import { Route as DeviceDesignerRouteImport } from './routes/device-designer'
 import { Route as DigitalTwinRouteImport } from './routes/digital-twin'
 import { Route as FailureInjectionRouteImport } from './routes/failure-injection'
-import { Route as PatientSimulatorRouteImport } from './routes/patient-simulator'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as RiskAssessmentRouteImport } from './routes/risk-assessment'
 import { Route as ScenarioGeneratorRouteImport } from './routes/scenario-generator'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as SimulationLabRouteImport } from './routes/simulation-lab'
 import { Route as TestResultsRouteImport } from './routes/test-results'
 
 const IndexRoute = IndexRouteImport.update({
@@ -38,11 +35,6 @@ const DatasetExplorerRoute = DatasetExplorerRouteImport.update({
   path: '/dataset-explorer',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DeviceDesignerRoute = DeviceDesignerRouteImport.update({
-  id: '/device-designer',
-  path: '/device-designer',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DigitalTwinRoute = DigitalTwinRouteImport.update({
   id: '/digital-twin',
   path: '/digital-twin',
@@ -51,11 +43,6 @@ const DigitalTwinRoute = DigitalTwinRouteImport.update({
 const FailureInjectionRoute = FailureInjectionRouteImport.update({
   id: '/failure-injection',
   path: '/failure-injection',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PatientSimulatorRoute = PatientSimulatorRouteImport.update({
-  id: '/patient-simulator',
-  path: '/patient-simulator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportsRoute = ReportsRouteImport.update({
@@ -78,11 +65,6 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SimulationLabRoute = SimulationLabRouteImport.update({
-  id: '/simulation-lab',
-  path: '/simulation-lab',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TestResultsRoute = TestResultsRouteImport.update({
   id: '/test-results',
   path: '/test-results',
@@ -93,30 +75,24 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ai-safety-analysis': typeof AiSafetyAnalysisRoute
   '/dataset-explorer': typeof DatasetExplorerRoute
-  '/device-designer': typeof DeviceDesignerRoute
   '/digital-twin': typeof DigitalTwinRoute
   '/failure-injection': typeof FailureInjectionRoute
-  '/patient-simulator': typeof PatientSimulatorRoute
   '/reports': typeof ReportsRoute
   '/risk-assessment': typeof RiskAssessmentRoute
   '/scenario-generator': typeof ScenarioGeneratorRoute
   '/settings': typeof SettingsRoute
-  '/simulation-lab': typeof SimulationLabRoute
   '/test-results': typeof TestResultsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ai-safety-analysis': typeof AiSafetyAnalysisRoute
   '/dataset-explorer': typeof DatasetExplorerRoute
-  '/device-designer': typeof DeviceDesignerRoute
   '/digital-twin': typeof DigitalTwinRoute
   '/failure-injection': typeof FailureInjectionRoute
-  '/patient-simulator': typeof PatientSimulatorRoute
   '/reports': typeof ReportsRoute
   '/risk-assessment': typeof RiskAssessmentRoute
   '/scenario-generator': typeof ScenarioGeneratorRoute
   '/settings': typeof SettingsRoute
-  '/simulation-lab': typeof SimulationLabRoute
   '/test-results': typeof TestResultsRoute
 }
 export interface FileRoutesById {
@@ -124,15 +100,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/ai-safety-analysis': typeof AiSafetyAnalysisRoute
   '/dataset-explorer': typeof DatasetExplorerRoute
-  '/device-designer': typeof DeviceDesignerRoute
   '/digital-twin': typeof DigitalTwinRoute
   '/failure-injection': typeof FailureInjectionRoute
-  '/patient-simulator': typeof PatientSimulatorRoute
   '/reports': typeof ReportsRoute
   '/risk-assessment': typeof RiskAssessmentRoute
   '/scenario-generator': typeof ScenarioGeneratorRoute
   '/settings': typeof SettingsRoute
-  '/simulation-lab': typeof SimulationLabRoute
   '/test-results': typeof TestResultsRoute
 }
 export interface FileRouteTypes {
@@ -141,45 +114,36 @@ export interface FileRouteTypes {
     | '/'
     | '/ai-safety-analysis'
     | '/dataset-explorer'
-    | '/device-designer'
     | '/digital-twin'
     | '/failure-injection'
-    | '/patient-simulator'
     | '/reports'
     | '/risk-assessment'
     | '/scenario-generator'
     | '/settings'
-    | '/simulation-lab'
     | '/test-results'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/ai-safety-analysis'
     | '/dataset-explorer'
-    | '/device-designer'
     | '/digital-twin'
     | '/failure-injection'
-    | '/patient-simulator'
     | '/reports'
     | '/risk-assessment'
     | '/scenario-generator'
     | '/settings'
-    | '/simulation-lab'
     | '/test-results'
   id:
     | '__root__'
     | '/'
     | '/ai-safety-analysis'
     | '/dataset-explorer'
-    | '/device-designer'
     | '/digital-twin'
     | '/failure-injection'
-    | '/patient-simulator'
     | '/reports'
     | '/risk-assessment'
     | '/scenario-generator'
     | '/settings'
-    | '/simulation-lab'
     | '/test-results'
   fileRoutesById: FileRoutesById
 }
@@ -187,15 +151,12 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AiSafetyAnalysisRoute: typeof AiSafetyAnalysisRoute
   DatasetExplorerRoute: typeof DatasetExplorerRoute
-  DeviceDesignerRoute: typeof DeviceDesignerRoute
   DigitalTwinRoute: typeof DigitalTwinRoute
   FailureInjectionRoute: typeof FailureInjectionRoute
-  PatientSimulatorRoute: typeof PatientSimulatorRoute
   ReportsRoute: typeof ReportsRoute
   RiskAssessmentRoute: typeof RiskAssessmentRoute
   ScenarioGeneratorRoute: typeof ScenarioGeneratorRoute
   SettingsRoute: typeof SettingsRoute
-  SimulationLabRoute: typeof SimulationLabRoute
   TestResultsRoute: typeof TestResultsRoute
 }
 
@@ -222,13 +183,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DatasetExplorerRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/device-designer': {
-      id: '/device-designer'
-      path: '/device-designer'
-      fullPath: '/device-designer'
-      preLoaderRoute: typeof DeviceDesignerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/digital-twin': {
       id: '/digital-twin'
       path: '/digital-twin'
@@ -241,13 +195,6 @@ declare module '@tanstack/react-router' {
       path: '/failure-injection'
       fullPath: '/failure-injection'
       preLoaderRoute: typeof FailureInjectionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/patient-simulator': {
-      id: '/patient-simulator'
-      path: '/patient-simulator'
-      fullPath: '/patient-simulator'
-      preLoaderRoute: typeof PatientSimulatorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reports': {
@@ -278,13 +225,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/simulation-lab': {
-      id: '/simulation-lab'
-      path: '/simulation-lab'
-      fullPath: '/simulation-lab'
-      preLoaderRoute: typeof SimulationLabRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/test-results': {
       id: '/test-results'
       path: '/test-results'
@@ -299,15 +239,12 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AiSafetyAnalysisRoute: AiSafetyAnalysisRoute,
   DatasetExplorerRoute: DatasetExplorerRoute,
-  DeviceDesignerRoute: DeviceDesignerRoute,
   DigitalTwinRoute: DigitalTwinRoute,
   FailureInjectionRoute: FailureInjectionRoute,
-  PatientSimulatorRoute: PatientSimulatorRoute,
   ReportsRoute: ReportsRoute,
   RiskAssessmentRoute: RiskAssessmentRoute,
   ScenarioGeneratorRoute: ScenarioGeneratorRoute,
   SettingsRoute: SettingsRoute,
-  SimulationLabRoute: SimulationLabRoute,
   TestResultsRoute: TestResultsRoute,
 }
 export const routeTree = rootRouteImport

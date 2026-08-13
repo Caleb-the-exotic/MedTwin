@@ -2,11 +2,7 @@ import React, { useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
-  CircuitBoard,
-  Activity,
-  HeartPulse,
   Wand2,
-  FlaskConical,
   Zap,
   ShieldAlert,
   ListChecks,
@@ -29,18 +25,9 @@ const NAV_GROUPS: {
     items: [{ to: "/", label: "Dashboard", icon: LayoutDashboard }],
   },
   {
-    label: "Design",
-    items: [
-      { to: "/device-designer", label: "Device Designer", icon: CircuitBoard },
-      { to: "/digital-twin", label: "Digital Twin", icon: Activity },
-      { to: "/patient-simulator", label: "Patient Simulator", icon: HeartPulse },
-    ],
-  },
-  {
     label: "Simulate",
     items: [
       { to: "/scenario-generator", label: "Scenario Generator", icon: Wand2 },
-      { to: "/simulation-lab", label: "Simulation Lab", icon: FlaskConical },
       { to: "/failure-injection", label: "Failure Injection", icon: Zap },
     ],
   },
@@ -99,8 +86,7 @@ export function Sidebar() {
             {collapsed && <div className="mx-2.5 mb-2 h-px bg-hairline" />}
             <ul className="flex flex-col gap-0.5">
               {group.items.map((item) => {
-                const isActive =
-                  item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+                const isActive = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
                 return (
                   <li key={item.to}>
                     <Link
@@ -132,24 +118,6 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
-
-      {!collapsed && (
-        <div className="mx-2.5 mb-2 rounded-md border border-hairline bg-panel-raised/60 px-3 py-2.5">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-ink-faint">
-              Solver
-            </span>
-            <span className="flex items-center gap-1.5 font-mono text-[10px] text-safe">
-              <span className="h-1.5 w-1.5 animate-blink rounded-full bg-safe" />
-              online
-            </span>
-          </div>
-          <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-hairline">
-            <div className="h-full w-[62%] rounded-full bg-signal/70" />
-          </div>
-          <p className="mt-1.5 font-mono text-[10px] text-ink-faint tabular">62% compute in use</p>
-        </div>
-      )}
 
       <div className="border-t border-hairline p-2.5">
         <button

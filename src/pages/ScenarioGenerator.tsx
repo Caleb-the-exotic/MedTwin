@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Wand2, Sparkles, Target, ListChecks, AlertOctagon, CheckCircle2, Clock } from "lucide-react";
+import {
+  Wand2,
+  Sparkles,
+  Target,
+  ListChecks,
+  AlertOctagon,
+  CheckCircle2,
+  Clock,
+} from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -34,7 +42,7 @@ export default function ScenarioGenerator() {
   }
 
   return (
-    <AppLayout title="Scenario Generator" subtitle="Describe a test condition in plain language and generate a structured simulation scenario">
+    <AppLayout>
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[420px_1fr]">
         <Card className="h-fit">
           <CardHeader>
@@ -47,7 +55,12 @@ export default function ScenarioGenerator() {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
             />
-            <Button variant="primary" className="w-full" onClick={handleGenerate} disabled={generating || !prompt.trim()}>
+            <Button
+              variant="primary"
+              className="w-full"
+              onClick={handleGenerate}
+              disabled={generating || !prompt.trim()}
+            >
               <Wand2 className="h-3.5 w-3.5" />
               {generating ? "Generating scenario..." : "Generate Scenario"}
             </Button>
@@ -75,7 +88,8 @@ export default function ScenarioGenerator() {
           {generating && (
             <Card className="p-4">
               <div className="flex items-center gap-2 text-xs text-ink-muted mb-3">
-                <Clock className="h-3.5 w-3.5 animate-pulse text-signal" /> Running mock AI scenario synthesis...
+                <Clock className="h-3.5 w-3.5 animate-pulse text-signal" /> Running mock AI scenario
+                synthesis...
               </div>
               <Skeleton className="h-4 w-2/3 mb-2" />
               <Skeleton className="h-3 w-full mb-1.5" />
@@ -93,10 +107,14 @@ export default function ScenarioGenerator() {
             scenarios.map((s) => (
               <Card key={s.id} className="animate-rise">
                 <CardHeader>
-                  <CardTitle className="normal-case text-sm font-semibold text-ink tracking-normal">{s.title}</CardTitle>
+                  <CardTitle className="normal-case text-sm font-semibold text-ink tracking-normal">
+                    {s.title}
+                  </CardTitle>
                   <div className="flex items-center gap-2">
                     <Badge tone={statusTone(s.riskLevel)}>{s.riskLevel} risk</Badge>
-                    <span className="font-mono text-[10px] text-ink-faint">{formatRelativeTime(s.createdAt)}</span>
+                    <span className="font-mono text-[10px] text-ink-faint">
+                      {formatRelativeTime(s.createdAt)}
+                    </span>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3 pt-0">
@@ -107,7 +125,10 @@ export default function ScenarioGenerator() {
                     value={
                       <ul className="mt-1 space-y-1">
                         {s.conditions.map((c, i) => (
-                          <li key={i} className="flex items-center gap-1.5 font-mono text-xs text-ink-muted">
+                          <li
+                            key={i}
+                            className="flex items-center gap-1.5 font-mono text-xs text-ink-muted"
+                          >
                             <span className="h-1 w-1 rounded-full bg-signal" /> {c}
                           </li>
                         ))}
@@ -115,7 +136,11 @@ export default function ScenarioGenerator() {
                     }
                   />
                   <ScenarioRow icon={AlertOctagon} label="Failure Mode" value={s.failureMode} />
-                  <ScenarioRow icon={CheckCircle2} label="Expected Behavior" value={s.expectedBehavior} />
+                  <ScenarioRow
+                    icon={CheckCircle2}
+                    label="Expected Behavior"
+                    value={s.expectedBehavior}
+                  />
                 </CardContent>
               </Card>
             ))
@@ -126,7 +151,15 @@ export default function ScenarioGenerator() {
   );
 }
 
-function ScenarioRow({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: React.ReactNode }) {
+function ScenarioRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: React.ReactNode;
+}) {
   return (
     <div className="flex gap-3">
       <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-hairline bg-panel-raised">

@@ -17,7 +17,9 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-void px-4">
       <div className="max-w-md rounded-xl border border-hairline bg-panel p-8 text-center shadow-panel">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-faint">Signal lost</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-faint">
+          Signal lost
+        </p>
         <h1 className="mt-3 font-mono text-6xl font-semibold text-signal tabular">404</h1>
         <h2 className="mt-4 text-lg font-semibold text-ink">Page not found</h2>
         <p className="mt-2 text-sm text-ink-muted">
@@ -98,7 +100,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
   shellComponent: RootShell,

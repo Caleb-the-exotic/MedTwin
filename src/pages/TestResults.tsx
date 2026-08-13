@@ -18,7 +18,10 @@ export default function TestResults() {
   const [statusFilter, setStatusFilter] = useState<"all" | TestStatus>("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
-  const categories = useMemo(() => ["all", ...Array.from(new Set(initialTestResults.map((t) => t.category)))], []);
+  const categories = useMemo(
+    () => ["all", ...Array.from(new Set(initialTestResults.map((t) => t.category)))],
+    [],
+  );
 
   const counts = useMemo(() => {
     return {
@@ -37,7 +40,7 @@ export default function TestResults() {
   });
 
   return (
-    <AppLayout title="Test Results" subtitle="Aggregated pass/fail outcomes across all simulation-driven test suites">
+    <AppLayout>
       <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatCard icon={CheckCircle2} label="Passed" value={counts.passed} tone="safe" />
         <StatCard icon={AlertTriangle} label="Warning" value={counts.warning} tone="amber" />
@@ -52,13 +55,21 @@ export default function TestResults() {
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-faint" />
-              <Input placeholder="Search tests..." value={query} onChange={(e) => setQuery(e.target.value)} className="w-52 pl-8" />
+              <Input
+                placeholder="Search tests..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-52 pl-8"
+              />
             </div>
             <Select
               value={categoryFilter}
               onChange={setCategoryFilter}
               className="w-40"
-              options={categories.map((c) => ({ value: c, label: c === "all" ? "All Categories" : c }))}
+              options={categories.map((c) => ({
+                value: c,
+                label: c === "all" ? "All Categories" : c,
+              }))}
             />
             <Select
               value={statusFilter}
@@ -79,7 +90,11 @@ export default function TestResults() {
       <Card>
         {filtered.length === 0 ? (
           <div className="p-4">
-            <EmptyState icon={Search} title="No matching tests" description="Try adjusting your filters or search query." />
+            <EmptyState
+              icon={Search}
+              title="No matching tests"
+              description="Try adjusting your filters or search query."
+            />
           </div>
         ) : (
           <Table>
@@ -102,7 +117,9 @@ export default function TestResults() {
                   </TD>
                   <TD className="text-ink-muted">{t.category}</TD>
                   <TD className="text-ink-muted">{t.device}</TD>
-                  <TD><Badge tone={statusTone(t.status)}>{t.status}</Badge></TD>
+                  <TD>
+                    <Badge tone={statusTone(t.status)}>{t.status}</Badge>
+                  </TD>
                   <TD className="font-mono">{t.duration}</TD>
                   <TD className="font-mono text-ink-faint">{formatRelativeTime(t.runAt)}</TD>
                 </TR>
