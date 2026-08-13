@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { Box3, Vector3 } from "three";
-import { Upload, RotateCcw, RefreshCw, Box, AlertTriangle, Loader2 } from "lucide-react";
+import { RotateCcw, RefreshCw, Box, AlertTriangle, Loader2 } from "lucide-react";
 import { cn } from "@/utils/cn";
 
 export const DEFAULT_MODEL_URL = "/models/maNO_CPP_approx.obj";
@@ -114,10 +114,10 @@ function splitGeometryIntoZones(
 
   const zoneOf = (y: number) => {
     const t = (y - yMin) / yRange;
-    for (let i = zones.length - 1; i >= 0; i--) {
-      if (t >= zones[i].min) return zones[i].id;
+    for (const zone of zones) {
+      if (t >= zone.min) return zone.id;
     }
-    return zones[0].id;
+    return zones[zones.length - 1].id;
   };
 
   const buckets = new Map<string, number[]>();
@@ -161,13 +161,11 @@ function applyHighlightsToZone(material: THREE.MeshStandardMaterial, color: stri
 
 export function ModelViewer({
   modelUrl = DEFAULT_MODEL_URL,
-  title = "Digital Twin Model",
   highlights,
   legend,
   className,
 }: {
   modelUrl?: string;
-  title?: string;
   highlights?: Record<string, string>;
   legend?: { zone: string; label: string }[];
   className?: string;
@@ -182,9 +180,7 @@ export function ModelViewer({
   const highlightsRef = useRef(highlights);
 
   const [status, setStatus] = useState<"loading" | "ready" | "fallback" | "error">("loading");
-  const [modelName, setModelName] = useState<string>(title);
   const [autoRotate, setAutoRotate] = useState(true);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     autoRotateRef.current = autoRotate;
@@ -348,25 +344,23 @@ export function ModelViewer({
       modelGroupRef.current = group;
     };
 
-    const loadObj = (url: string, name: string) => {
+    const loadObj = (url: string) => {
       setStatus("loading");
       new OBJLoader().load(
         url,
         (obj) => {
           placeModel(obj);
-          setModelName(name);
           setStatus("ready");
         },
         undefined,
         () => {
           placeModel(buildHeartModel());
-          setModelName(`${name} — placeholder geometry`);
           setStatus("fallback");
         },
       );
     };
 
-    loadObj(modelUrl, title);
+    loadObj(modelUrl);
 
     let raf = 0;
     const animate = () => {
@@ -405,63 +399,7 @@ export function ModelViewer({
       modelGroupRef.current = null;
       zoneMaterialsRef.current = {};
     };
-  }, [modelUrl, title]);
-
-  const loadObjText = useCallback((text: string, name: string) => {
-    setStatus("loading");
-    try {
-      const obj = new OBJLoader().parse(text);
-      if (!sceneRef.current) return;
-      const group = modelGroupRef.current;
-      if (group) {
-        group.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            child.geometry.dispose();
-            if (Array.isArray(child.material)) child.material.forEach((m) => m.dispose());
-            else child.material.dispose();
-          }
-        });
-        sceneRef.current.remove(group);
-      }
-      const box = new Box3().setFromObject(obj);
-      const size = box.getSize(new Vector3());
-      const scale = 3.4 / Math.max(0.001, Math.max(size.x, size.y, size.z));
-      obj.scale.setScalar(scale);
-      box.setFromObject(obj);
-      const center = box.getCenter(new Vector3());
-      obj.position.set(-center.x, -center.y - 1.4, -center.z);
-      const meshes: THREE.Mesh[] = [];
-      obj.traverse((child) => {
-        if (child instanceof THREE.Mesh) meshes.push(child);
-      });
-      for (const mesh of meshes) {
-        const base = new THREE.MeshStandardMaterial({
-          color: baseColorFor(mesh),
-          metalness: 0.45,
-          roughness: 0.25,
-          emissive: 0x14b8a6,
-          emissiveIntensity: 0.1,
-        });
-        mesh.material = base;
-      }
-      sceneRef.current.add(obj);
-      modelGroupRef.current = obj;
-      setModelName(name);
-      setStatus("ready");
-    } catch {
-      setStatus("error");
-    }
-  }, []);
-
-  const handleFile = useCallback(
-    (file: File | undefined | null) => {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => loadObjText(String(reader.result ?? ""), file.name);
-      reader.readAsText(file);
-    },
-    [loadObjText],
-  );
+  }, [modelUrl]);
 
   const resetView = useCallback(() => {
     const camera = cameraRef.current;
@@ -484,26 +422,6 @@ export function ModelViewer({
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_30%,rgba(79,209,197,0.10),transparent_70%)]" />
 
-      <div className="absolute left-3.5 top-3.5 z-10 flex items-center gap-2.5">
-        <span
-          className={cn(
-            "h-2 w-2 rounded-full",
-            status === "ready" && "bg-safe animate-blink",
-            status === "loading" && "bg-amber animate-blink",
-            (status === "fallback" || status === "error") && "bg-critical",
-          )}
-        />
-        <div className="leading-tight">
-          <p className="text-[11px] font-semibold text-ink">{modelName}</p>
-          <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-ink-faint">
-            {status === "loading" && "loading model…"}
-            {status === "ready" && "obj · loaded"}
-            {status === "fallback" && "obj not found · placeholder"}
-            {status === "error" && "render unavailable"}
-          </p>
-        </div>
-      </div>
-
       <div className="absolute right-3.5 top-3.5 z-10 flex items-center gap-1.5">
         <button
           onClick={resetView}
@@ -524,25 +442,7 @@ export function ModelViewer({
           <RefreshCw className={cn("h-3.5 w-3.5", autoRotate && "animate-pulse")} />
           Rotate
         </button>
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="flex h-8 items-center gap-1.5 rounded-md border border-hairline bg-panel-raised/60 px-2.5 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted transition-colors hover:text-ink"
-        >
-          <Upload className="h-3.5 w-3.5" />
-          Load .obj
-        </button>
       </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".obj,text/plain"
-        className="hidden"
-        onChange={(e) => {
-          handleFile(e.target.files?.[0]);
-          e.target.value = "";
-        }}
-      />
 
       {status === "loading" && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#0c0f17]/70 backdrop-blur-[2px]">
@@ -558,12 +458,6 @@ export function ModelViewer({
           <Box className="h-3.5 w-3.5 shrink-0 text-amber" />
           <p className="text-[11px] text-ink-muted">
             No model file served — showing placeholder geometry.
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="ml-1 font-medium text-signal hover:underline"
-            >
-              Upload .obj
-            </button>
           </p>
         </div>
       )}

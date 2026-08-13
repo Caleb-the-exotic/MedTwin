@@ -1,23 +1,10 @@
 import React, { useMemo, useRef, useState } from "react";
-import {
-  CircuitBoard,
-  Radio,
-  Cpu,
-  Zap,
-  Battery,
-  ShieldCheck,
-  Save,
-  CheckCircle2,
-  AlertTriangle,
-} from "lucide-react";
-import { SectionHeader } from "@/components/shared/SectionHeader";
+import { CircuitBoard, Radio, Cpu, Zap, Battery, ShieldCheck } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Badge, statusTone } from "@/components/ui/badge";
 import { useAppStore } from "@/hooks/useAppStore";
-import { deviceService } from "@/services/deviceService";
 import type { ComponentKind, Device, DeviceComponent } from "@/types";
 
 const KIND_META: Record<ComponentKind, { icon: React.ElementType; color: string }> = {
@@ -30,7 +17,7 @@ const KIND_META: Record<ComponentKind, { icon: React.ElementType; color: string 
 };
 
 export default function DeviceDesigner() {
-  const { devices, selectedDeviceId, selectDevice, saveDevice } = useAppStore();
+  const { devices, selectedDeviceId } = useAppStore();
   const device = useMemo(
     () => devices.find((d) => d.id === selectedDeviceId) ?? devices[0],
     [devices, selectedDeviceId],
@@ -39,16 +26,12 @@ export default function DeviceDesigner() {
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(
     device.components[0]?.id ?? null,
   );
-  const [validation, setValidation] = useState<{ valid: boolean; issues: string[] } | null>(null);
-  const [validating, setValidating] = useState(false);
-  const [saving, setSaving] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
   const dragState = useRef<{ id: string; offsetX: number; offsetY: number } | null>(null);
 
   React.useEffect(() => {
     setLocalDevice(device);
     setSelectedComponentId(device.components[0]?.id ?? null);
-    setValidation(null);
   }, [device]);
 
   const selectedComponent =
@@ -99,69 +82,9 @@ export default function DeviceDesigner() {
     dragState.current = null;
   }
 
-  async function handleValidate() {
-    setValidating(true);
-    setValidation(null);
-    const result = await deviceService.validate(localDevice);
-    setValidation(result);
-    setValidating(false);
-  }
-
-  async function handleSave() {
-    setSaving(true);
-    const saved = await deviceService.save(localDevice);
-    saveDevice(saved);
-    setSaving(false);
-  }
-
   return (
     <>
-      <SectionHeader
-        title={localDevice.name}
-        description={`${localDevice.deviceClass} · ${localDevice.version}`}
-        action={
-          <div className="flex items-center gap-2">
-            <Select
-              value={selectedDeviceId}
-              onChange={selectDevice}
-              options={devices.map((d) => ({ value: d.id, label: d.name }))}
-              className="w-56"
-            />
-            <Button variant="outline" size="md" onClick={handleValidate} disabled={validating}>
-              {validating ? "Validating..." : "Validate"}
-            </Button>
-            <Button variant="primary" size="md" onClick={handleSave} disabled={saving}>
-              <Save className="h-3.5 w-3.5" /> {saving ? "Saving..." : "Save Device"}
-            </Button>
-          </div>
-        }
-      />
-
-      {validation && (
-        <div
-          className={`mb-4 flex items-start gap-2.5 rounded-lg border p-3 text-sm ${validation.valid ? "border-safe/30 bg-safe/5 text-safe" : "border-amber/30 bg-amber/5 text-amber"}`}
-        >
-          {validation.valid ? (
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-          ) : (
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-          )}
-          <div>
-            <p className="font-medium">
-              {validation.valid ? "Device passed validation" : "Validation found issues"}
-            </p>
-            {!validation.valid && (
-              <ul className="mt-1 list-inside list-disc text-xs text-ink-muted">
-                {validation.issues.map((issue, i) => (
-                  <li key={i}>{issue}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-4">
         <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle>Block Diagram Canvas</CardTitle>
@@ -292,27 +215,6 @@ export default function DeviceDesigner() {
                 Select a component on the canvas to edit its properties.
               </p>
             )}
-
-            <div className="border-t border-hairline pt-3">
-              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-ink-faint">
-                Component Palette
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {(Object.keys(KIND_META) as ComponentKind[]).map((kind) => {
-                  const meta = KIND_META[kind];
-                  const Icon = meta.icon;
-                  return (
-                    <div
-                      key={kind}
-                      className="flex flex-col items-center gap-1 rounded-md border border-hairline bg-panel-raised py-2"
-                    >
-                      <Icon className="h-4 w-4" style={{ color: meta.color }} />
-                      <span className="text-[9px] capitalize text-ink-faint">{kind}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
