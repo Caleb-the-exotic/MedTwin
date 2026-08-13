@@ -16,7 +16,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
       className={`relative h-5 w-9 shrink-0 rounded-full border transition-colors ${checked ? "border-signal/40 bg-signal/30" : "border-hairline bg-panel-raised"}`}
     >
       <span
-        className={`absolute top-0.5 h-3.5 w-3.5 rounded-full bg-ink transition-transform ${checked ? "translate-x-4" : "translate-x-0.5"}`}
+        className={`absolute top-0.5 h-3.5 w-3.5 rounded-full bg-ink transition-all ${checked ? "left-[20px]" : "left-0.5"}`}
       />
     </button>
   );
