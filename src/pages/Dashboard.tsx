@@ -1,15 +1,13 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { CircuitBoard, HeartPulse, FlaskConical } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SectionHeader } from "@/components/shared/SectionHeader";
-import { Select } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ModelViewer } from "@/components/twin/ModelViewer";
 import DeviceDesigner from "@/pages/DeviceDesigner";
 import PatientSimulator from "@/pages/PatientSimulator";
 import SimulationLab from "@/pages/SimulationLab";
 import { useAppStore } from "@/hooks/useAppStore";
-import { formatRelativeTime } from "@/utils/format";
 
 const ZONE_LEGEND = [
   { zone: "top", label: "SpO2" },
@@ -31,11 +29,7 @@ function zoneColor(value: number, warn: [number, number], crit: [number, number]
 export default function Dashboard() {
   const { twins, patients, selectedPatientId, sliderOverrides } = useAppStore();
 
-  const [selectedTwinId, setSelectedTwinId] = React.useState(twins[0].id);
-  const twin = useMemo(
-    () => twins.find((t) => t.id === selectedTwinId) ?? twins[0],
-    [twins, selectedTwinId],
-  );
+  const twin = twins[0];
 
   const patient = patients.find((p) => p.id === selectedPatientId) ?? patients[0];
   const baseline = useMemo(
@@ -57,18 +51,7 @@ export default function Dashboard() {
     <AppLayout>
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
         <div className="xl:sticky xl:top-[76px] xl:self-start">
-          <SectionHeader
-            title="Digital Twin Model"
-            description={`${twin.deviceName} · fidelity ${twin.fidelity}% · synced ${formatRelativeTime(twin.lastSync)}`}
-            action={
-              <Select
-                value={selectedTwinId}
-                onChange={setSelectedTwinId}
-                options={twins.map((t) => ({ value: t.id, label: t.deviceName }))}
-                className="w-52"
-              />
-            }
-          />
+          <SectionHeader title="Digital Twin Model" titleClassName="text-2xl" />
           <ModelViewer
             title={twin.deviceName}
             highlights={highlights}
