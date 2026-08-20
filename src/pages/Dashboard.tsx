@@ -11,10 +11,10 @@ import SimulationLab from "@/pages/SimulationLab";
 import { useAppStore } from "@/hooks/useAppStore";
 
 const MODEL_OPTIONS = [
-  { id: "man", label: "Man", url: "/models/Man.obj" },
-  { id: "woman", label: "Woman", url: "/models/Woman.obj" },
-  { id: "child", label: "Child", url: "/models/baby.obj" },
-  { id: "hand", label: "Hand", url: "/models/Hand.obj" },
+  { id: "hand", label: "Hand", url: "/models/Hand.obj", patientId: "pt-01" },
+  { id: "man", label: "Man", url: "/models/Man.obj", patientId: "pt-01" },
+  { id: "woman", label: "Woman", url: "/models/Woman.obj", patientId: "pt-02" },
+  { id: "child", label: "Child", url: "/models/baby.obj", patientId: "pt-03" },
 ];
 
 const ZONE_LEGEND = [
@@ -65,8 +65,14 @@ function zoneColor(
 }
 
 export default function Dashboard() {
-  const { patients, selectedPatientId, sliderOverrides } = useAppStore();
+  const { patients, selectedPatientId, sliderOverrides, selectPatient } = useAppStore();
   const [modelUrl, setModelUrl] = useState("/models/Hand.obj");
+
+  const handleModelChange = (url: string) => {
+    setModelUrl(url);
+    const match = MODEL_OPTIONS.find((m) => m.url === url);
+    if (match) selectPatient(match.patientId);
+  };
 
   const patient = patients.find((p) => p.id === selectedPatientId) ?? patients[0];
   const baseline = useMemo(
@@ -126,7 +132,7 @@ export default function Dashboard() {
             action={
               <Select
                 value={modelUrl}
-                onChange={setModelUrl}
+                onChange={handleModelChange}
                 options={MODEL_OPTIONS.map((m) => ({ value: m.url, label: m.label }))}
                 className="w-40"
               />

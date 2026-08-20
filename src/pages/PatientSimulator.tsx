@@ -3,7 +3,6 @@ import { Activity, Wind, Droplets } from "lucide-react";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
-import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { VitalsLineChart } from "@/components/charts/VitalsChart";
 import { useAppStore, PRESETS } from "@/hooks/useAppStore";
@@ -25,7 +24,6 @@ export default function PatientSimulator() {
   const {
     patients,
     selectedPatientId,
-    selectPatient,
     preset,
     applyPreset,
     sliderOverrides,
@@ -37,17 +35,7 @@ export default function PatientSimulator() {
 
   return (
     <>
-      <SectionHeader
-        title={patient.name}
-        action={
-          <Select
-            value={selectedPatientId}
-            onChange={selectPatient}
-            options={patients.map((p) => ({ value: p.id, label: p.name }))}
-            className="w-64"
-          />
-        }
-      />
+      <SectionHeader title={patient.name} />
 
       <div className="mb-4 flex flex-wrap gap-2">
         {PRESET_META.map((p) => (
