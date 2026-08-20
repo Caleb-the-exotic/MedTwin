@@ -1,13 +1,21 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { CircuitBoard, HeartPulse, FlaskConical } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SectionHeader } from "@/components/shared/SectionHeader";
+import { Select } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ModelViewer } from "@/components/twin/ModelViewer";
 import DeviceDesigner from "@/pages/DeviceDesigner";
 import PatientSimulator from "@/pages/PatientSimulator";
 import SimulationLab from "@/pages/SimulationLab";
 import { useAppStore } from "@/hooks/useAppStore";
+
+const MODEL_OPTIONS = [
+  { id: "man", label: "Man", url: "/models/Man.obj" },
+  { id: "woman", label: "Woman", url: "/models/Woman.obj" },
+  { id: "child", label: "Child", url: "/models/baby.obj" },
+  { id: "hand", label: "Hand", url: "/models/Hand.obj" },
+];
 
 const ZONE_LEGEND = [
   { zone: "top", label: "SpO2" },
@@ -58,6 +66,7 @@ function zoneColor(
 
 export default function Dashboard() {
   const { patients, selectedPatientId, sliderOverrides } = useAppStore();
+  const [modelUrl, setModelUrl] = useState(MODEL_OPTIONS[0].url);
 
   const patient = patients.find((p) => p.id === selectedPatientId) ?? patients[0];
   const baseline = useMemo(
@@ -111,8 +120,20 @@ export default function Dashboard() {
         </div>
 
         <div>
-          <SectionHeader title="Digital Twin Model" titleClassName="text-2xl" />
+          <SectionHeader
+            title="Digital Twin Model"
+            titleClassName="text-2xl"
+            action={
+              <Select
+                value={modelUrl}
+                onChange={setModelUrl}
+                options={MODEL_OPTIONS.map((m) => ({ value: m.url, label: m.label }))}
+                className="w-40"
+              />
+            }
+          />
           <ModelViewer
+            modelUrl={modelUrl}
             highlights={highlights}
             legend={ZONE_LEGEND}
             className="h-[420px] xl:h-[calc(100vh-158px)]"

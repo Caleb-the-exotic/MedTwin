@@ -7,14 +7,29 @@ import { RotateCcw, RefreshCw, Box, AlertTriangle, Loader2 } from "lucide-react"
 import { cn } from "@/utils/cn";
 import { useAppStore } from "@/hooks/useAppStore";
 
-export const DEFAULT_MODEL_URL = "/models/maNO_CPP_approx.obj";
+export const DEFAULT_MODEL_URL = "/models/Man.obj";
 
 export const MODEL_ZONES: { id: string; label: string; min: number; max: number }[] = [
-  { id: "top", label: "Top", min: 0.68, max: 1 },
-  { id: "upper", label: "Upper", min: 0.35, max: 0.68 },
-  { id: "center", label: "Center", min: 0.12, max: 0.35 },
+  { id: "top", label: "Top", min: 0.72, max: 1 },
+  { id: "upper", label: "Upper", min: 0.38, max: 0.72 },
+  { id: "center", label: "Center", min: 0.12, max: 0.38 },
   { id: "lower", label: "Lower", min: 0, max: 0.12 },
 ];
+
+type Axis = "x" | "y" | "z";
+
+function zoneForCoord(
+  coord: number,
+  axisMin: number,
+  axisRange: number,
+  zones: typeof MODEL_ZONES,
+): string {
+  const t = (coord - axisMin) / axisRange;
+  for (const zone of zones) {
+    if (t >= zone.min) return zone.id;
+  }
+  return zones[zones.length - 1].id;
+}
 
 const BASE_COLORS: Record<string, number> = {
   body: 0x4fd1c5,
@@ -100,34 +115,27 @@ function baseColorFor(mesh: THREE.Mesh): number {
 function splitGeometryIntoZones(
   geometry: THREE.BufferGeometry,
   zones: typeof MODEL_ZONES,
+  axis: Axis,
+  axisMin: number,
+  axisRange: number,
 ): { id: string; geometry: THREE.BufferGeometry }[] {
   const pos = geometry.getAttribute("position");
   if (!pos) return [];
-  geometry.computeBoundingBox();
-  const bbox = geometry.boundingBox;
-  if (!bbox) return [];
-  const yMin = bbox.min.y;
-  const yRange = Math.max(0.0001, bbox.max.y - bbox.min.y);
 
   const index = geometry.index;
   const triCount = index ? Math.floor(index.count / 3) : Math.floor(pos.count / 3);
   if (triCount === 0) return [];
 
-  const zoneOf = (y: number) => {
-    const t = (y - yMin) / yRange;
-    for (const zone of zones) {
-      if (t >= zone.min) return zone.id;
-    }
-    return zones[zones.length - 1].id;
-  };
+  const coord = (idx: number) =>
+    axis === "x" ? pos.getX(idx) : axis === "y" ? pos.getY(idx) : pos.getZ(idx);
 
   const buckets = new Map<string, number[]>();
   for (let i = 0; i < triCount; i++) {
     const a = index ? index.getX(i * 3) : i * 3;
     const b = index ? index.getX(i * 3 + 1) : i * 3 + 1;
     const c = index ? index.getX(i * 3 + 2) : i * 3 + 2;
-    const cy = (pos.getY(a) + pos.getY(b) + pos.getY(c)) / 3;
-    const zone = zoneOf(cy);
+    const cCoord = (coord(a) + coord(b) + coord(c)) / 3;
+    const zone = zoneForCoord(cCoord, axisMin, axisRange, zones);
     if (!buckets.has(zone)) buckets.set(zone, []);
     buckets.get(zone)!.push(a, b, c);
   }
@@ -277,10 +285,30 @@ export function ModelViewer({
 
       if (meshes.length === 0) return;
 
+      const whole = new Box3().setFromObject(obj);
+      const size = whole.getSize(new Vector3());
+      const axis: Axis = size.x >= size.y && size.x >= size.z ? "x" : size.y >= size.z ? "y" : "z";
+      const axisMin = whole.min[axis];
+      const axisRange = Math.max(0.0001, whole.max[axis] - whole.min[axis]);
+
+      const zoneIdForMesh = (mesh: THREE.Mesh) => {
+        const g = mesh.geometry;
+        g.computeBoundingBox();
+        const bb = g.boundingBox;
+        if (!bb) return MODEL_ZONES[MODEL_ZONES.length - 1].id;
+        const c =
+          axis === "x"
+            ? (bb.min.x + bb.max.x) / 2
+            : axis === "y"
+              ? (bb.min.y + bb.max.y) / 2
+              : (bb.min.z + bb.max.z) / 2;
+        return zoneForCoord(c, axisMin, axisRange, MODEL_ZONES);
+      };
+
       for (const mesh of meshes) {
         const parent = mesh.parent;
         if (!parent) continue;
-        const zones = splitGeometryIntoZones(mesh.geometry, MODEL_ZONES);
+        const zones = splitGeometryIntoZones(mesh.geometry, MODEL_ZONES, axis, axisMin, axisRange);
         if (zones.length <= 1) {
           const mat = new THREE.MeshStandardMaterial({
             color: baseColorFor(mesh),
@@ -290,6 +318,9 @@ export function ModelViewer({
             emissiveIntensity: 0.1,
           });
           mesh.material = mat;
+          const zid = zoneIdForMesh(mesh);
+          if (!zoneMaterialsRef.current[zid]) zoneMaterialsRef.current[zid] = [];
+          zoneMaterialsRef.current[zid].push(mat);
           continue;
         }
         const oldMat = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
