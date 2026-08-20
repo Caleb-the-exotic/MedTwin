@@ -7,7 +7,7 @@ import { RotateCcw, RefreshCw, Box, AlertTriangle, Loader2 } from "lucide-react"
 import { cn } from "@/utils/cn";
 import { useAppStore } from "@/hooks/useAppStore";
 
-export const DEFAULT_MODEL_URL = "/models/Man.obj";
+export const DEFAULT_MODEL_URL = "/models/Hand.obj";
 
 export const MODEL_ZONES: { id: string; label: string; min: number; max: number }[] = [
   { id: "top", label: "Top", min: 0.72, max: 1 },
@@ -156,6 +156,17 @@ function splitGeometryIntoZones(
     });
 }
 
+function makeModelUpright(obj: THREE.Group) {
+  const box = new Box3().setFromObject(obj);
+  const size = box.getSize(new Vector3());
+  if (size.y >= size.x && size.y >= size.z) return;
+  const m = new THREE.Matrix4().makeRotationX(-Math.PI / 2);
+  if (size.z < size.x) m.makeRotationZ(Math.PI / 2);
+  obj.traverse((child) => {
+    if (child instanceof THREE.Mesh) child.geometry.applyMatrix4(m);
+  });
+}
+
 function applyHighlightsToZone(material: THREE.MeshStandardMaterial, color: string | undefined) {
   if (!color) {
     material.color.setHex(0x4fd1c5);
@@ -285,7 +296,11 @@ export function ModelViewer({
 
       if (meshes.length === 0) return;
 
-      const whole = new Box3().setFromObject(obj);
+      const whole = new Box3();
+      for (const mesh of meshes) {
+        mesh.geometry.computeBoundingBox();
+        if (mesh.geometry.boundingBox) whole.union(mesh.geometry.boundingBox);
+      }
       const size = whole.getSize(new Vector3());
       const axis: Axis = size.x >= size.y && size.x >= size.z ? "x" : size.y >= size.z ? "y" : "z";
       const axisMin = whole.min[axis];
@@ -382,6 +397,7 @@ export function ModelViewer({
       new OBJLoader().load(
         url,
         (obj) => {
+          makeModelUpright(obj);
           placeModel(obj);
           setStatus("ready");
         },

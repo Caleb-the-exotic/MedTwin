@@ -66,7 +66,7 @@ function zoneColor(
 
 export default function Dashboard() {
   const { patients, selectedPatientId, sliderOverrides } = useAppStore();
-  const [modelUrl, setModelUrl] = useState(MODEL_OPTIONS[0].url);
+  const [modelUrl, setModelUrl] = useState("/models/Hand.obj");
 
   const patient = patients.find((p) => p.id === selectedPatientId) ?? patients[0];
   const baseline = useMemo(

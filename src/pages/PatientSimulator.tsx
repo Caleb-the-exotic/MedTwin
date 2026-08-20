@@ -39,7 +39,6 @@ export default function PatientSimulator() {
     <>
       <SectionHeader
         title={patient.name}
-        description={`${patient.age > 0 ? `${patient.age} yrs` : "Neonate"} · ${patient.weightKg} kg · ${patient.condition}`}
         action={
           <Select
             value={selectedPatientId}
